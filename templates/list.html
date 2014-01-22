@@ -1,0 +1,7 @@
+{% extends 'content.html' %}
+{% from 'macros.html' import render_pagination, render_sortable_table %}
+{% block content %}
+	{{ render_pagination(list, 'list') }}
+	{{ render_sortable_table(list.items, cols) }}
+	{{ render_pagination(list, 'list') }}
+{% endblock %}
