@@ -1,6 +1,4 @@
-{% include 'header.html' %}
-
-{% macro tableview(rows, cols, headers=True) %}
+{% macro render_table(rows, cols, headers=True) %}
 	<table class="table">
 	{% for row in rows %}
 		{% if headers and loop.first %}
@@ -19,4 +17,75 @@
 	</table>
 {% endmacro %}
 
-{{tableview(rows=list, cols=c)}}
+
+{% macro render_sortable_table(rows, cols) %}
+	<table class="table">
+	{% for row in rows %}
+		{% if loop.first %}
+			<tr>
+			{% for col in cols %}
+				{% if request.args.get('sort') == col  
+				   and request.args.get('dir') != 'desc' %}
+					<th class="sorted">
+						<a href="?sort={{col}}&dir=desc">{{col}}</a>
+					</th>
+				{% else %}
+					<th class="sorted">
+						<a href="?sort={{col}}&dir=asc">{{col}}</a>
+					</th>
+				{% endif %}
+			{% endfor %}
+			</tr>
+		{% endif %}
+		<tr>
+			{% for col in cols %}
+				<td>{{ row[col] }}</td>
+			{% endfor %}
+		</tr>
+	{% endfor %}
+	</table>
+{% endmacro %}
+
+
+{% macro render_pagination(pagination, endpoint) %}
+	{% set params = '?' + request.args.to_dict()|urlencode if request.args %}
+
+	<ul class="pagination">
+	{% if pagination.has_prev %}
+		<li>
+			<a href="{{ url_for(endpoint, page=pagination.page-1) }}
+			{{params}}">&laquo;</a>
+	{% else %}
+		<li class="disabled">
+			<a>&laquo;</a>
+	{% endif %}
+		</li>
+
+	{% for page in pagination.iter_pages() %}
+		{% if page %}
+			{% if page != pagination.page %}
+				<li>
+					<a href="{{ url_for(endpoint, page=page) }}{{params}}">{{ page }}</a>
+			    </li>
+			{% else %}
+				<li class="active">
+					<a>{{ page }}</a>
+				</li>
+			{% endif %}
+		{% else %}
+			<li class="disabled">
+			  <span class=ellipsis>…</span>
+			</li>
+		{% endif %}
+	{% endfor %}
+
+	{% if pagination.has_next %}
+		<li>
+			<a href="{{ url_for(endpoint, page=pagination.page+1) }}{{params}}">&raquo;</a>
+	{% else %}
+		<li class="disabled">
+			 <a>&raquo;</a>
+	{% endif %}
+		</li>
+	</ul>
+{% endmacro %}
